@@ -10,22 +10,9 @@
 		0ADD25A62D307EDE00A7A50A /* geminiAI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = geminiAI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		0ADD26342D30891600A7A50A /* Exceptions for "geminiAI" folder in "geminiAI" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Views/Untitled.swift,
-			);
-			target = 0ADD25A52D307EDE00A7A50A /* geminiAI */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0ADD25A82D307EDE00A7A50A /* geminiAI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				0ADD26342D30891600A7A50A /* Exceptions for "geminiAI" folder in "geminiAI" target */,
-			);
 			path = geminiAI;
 			sourceTree = "<group>";
 		};

@@ -8,68 +8,11 @@ struct ChatView: View {
     @State private var isSendingMessage = false
     @State private var showAlert = false
     @State private var geminiClient = getAnswerClient()
+    @State private var isLoading = false
 
     var body: some View {
         NavigationView {
             VStack {
-                // Sağ üst köşe butonları
-                HStack {
-                    Spacer()
-                    VStack {
-                        // Sohbeti Sonlandır Butonu
-                        Button(action: {
-                            showAlert = true
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 30, height: 30)
-                                .foregroundColor(.red)
-                                .padding(10)
-                        }
-                        .overlay(
-                            Text("Sohbeti Sonlandır")
-                                .font(.caption)
-                                .foregroundColor(.white)
-                                .padding(4)
-                                .background(Color.black.opacity(0.7))
-                                .cornerRadius(5)
-                                .offset(y: -35), alignment: .top
-                        )
-                        .alert(isPresented: $showAlert) {
-                            Alert(
-                                title: Text("Sohbeti Kaydetmek İster Misiniz?"),
-                                primaryButton: .default(Text("Evet")) {
-                                    saveChatToArchive()
-                                    clearChatMessages() // Sohbeti kaydettikten sonra chatMessages'ı temizle
-                                },
-                                secondaryButton: .cancel()
-                            )
-                        }
-                        
-                        // Arşivlenmiş Sohbetler Butonu
-                        NavigationLink(destination: ChatArchiveView()) {
-                            Image(systemName: "archivebox.fill")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 30, height: 30)
-                                .foregroundColor(.blue)
-                                .padding(10)
-                        }
-                        .overlay(
-                            Text("Arşivlenmiş Sohbetler")
-                                .font(.caption)
-                                .foregroundColor(.white)
-                                .padding(4)
-                                .background(Color.black.opacity(0.7))
-                                .cornerRadius(5)
-                                .offset(y: -35), alignment: .top
-                        )
-                    }
-                }
-                .padding(.top, 20) // Butonlar arasındaki mesafe
-
-                // Sohbet Bölümü
                 ScrollView {
                     ScrollViewReader { scrollViewProxy in
                         VStack {
@@ -86,7 +29,6 @@ struct ChatView: View {
                     }
                 }
 
-                // Mesaj Yazma ve Gönderme
                 HStack {
                     TextField("Mesajınızı yazın...", text: $messageText)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -102,8 +44,51 @@ struct ChatView: View {
                     .disabled(isSendingMessage || messageText.isEmpty)
                 }
                 .padding()
+
+                if isLoading {
+                    HStack {
+                        Spacer()
+                        Text("...")
+                            .font(.title)
+                            .foregroundColor(.gray)
+                            .padding()
+                        Spacer()
+                    }
+                }
             }
             .navigationTitle("Sohbet")
+            .navigationBarItems(trailing: HStack {
+                Button(action: {
+                    showAlert = true
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(.red)
+                        .padding(10)
+                }
+                .disabled(chatMessages.isEmpty)
+                .alert(isPresented: $showAlert) {
+                    Alert(
+                        title: Text("Sohbeti Kaydetmek İster Misiniz?"),
+                        primaryButton: .default(Text("Evet")) {
+                            saveChatToArchive()
+                            clearChatMessages()
+                        },
+                        secondaryButton: .cancel()
+                    )
+                }
+
+                NavigationLink(destination: ChatArchiveView()) {
+                    Image(systemName: "archivebox.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(.blue)
+                        .padding(10)
+                }
+            })
         }
     }
 
@@ -120,6 +105,7 @@ struct ChatView: View {
         chatMessages.append(userMessage)
         messageText = ""
         isSendingMessage = true
+        isLoading = true
 
         Task {
             do {
@@ -136,27 +122,24 @@ struct ChatView: View {
                 chatMessages.append(errorMessage)
             }
             isSendingMessage = false
+            isLoading = false
         }
     }
 
-    // Sohbeti kaydetme fonksiyonu
     func saveChatToArchive() {
         let messages = chatMessages.map { message in
             ArchivedMessage(text: message.text, isUser: message.isUser)
         }
         let chatArchive = ChatArchive(date: Date(), messages: messages)
 
-        // ModelContext'e ekle ve kaydet
         do {
             modelContext.insert(chatArchive)
             try modelContext.save()
-            print("Sohbet başarıyla kaydedildi.")
         } catch {
             print("Sohbet kaydedilemedi: \(error.localizedDescription)")
         }
     }
 
-    // Sohbeti temizleme fonksiyonu
     func clearChatMessages() {
         chatMessages.removeAll()
     }
