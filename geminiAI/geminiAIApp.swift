@@ -11,7 +11,8 @@ import SwiftUI
 struct geminiAIApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ChatView()
+                .modelContainer(for: [ChatArchive.self, ArchivedMessage.self])
         }
     }
 }
